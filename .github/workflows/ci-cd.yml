@@ -83,7 +83,7 @@ jobs:
       - name: Checkout infrastructure repository
         uses: actions/checkout@v4
         with:
-          repository: YOUR_ORG/ai-task-platform-infra
+          repository: Akarshak51/gitops
           token: ${{ secrets.INFRA_REPO_TOKEN }}
           path: infra
 
@@ -92,6 +92,7 @@ jobs:
         run: |
           TAG=${{ needs.build-and-push.outputs.image_tag }}
           NAMESPACE=${{ secrets.DOCKERHUB_USERNAME }}
+          
           sed -i "s|image: .*ai-task-backend:.*|image: docker.io/${NAMESPACE}/ai-task-backend:${TAG}|" k8s/backend.yaml
           sed -i "s|image: .*ai-task-frontend:.*|image: docker.io/${NAMESPACE}/ai-task-frontend:${TAG}|" k8s/frontend.yaml
           sed -i "s|image: .*ai-task-worker:.*|image: docker.io/${NAMESPACE}/ai-task-worker:${TAG}|" k8s/worker.yaml
@@ -104,5 +105,3 @@ jobs:
           git add k8s/
           git commit -m "chore: bump image tags to ${{ needs.build-and-push.outputs.image_tag }}" || echo "No changes to commit"
           git push
-          # Argo CD's Auto Sync (selfHeal + automated) picks this commit up
-          # and reconciles the cluster automatically - no manual kubectl needed.
